@@ -1,4 +1,4 @@
-const API = "https://controle-de-livros-backend.onrender.com";
+const API = "https://controle-de-livros-backend-1.onrender.com";
 
 async function register() {
     

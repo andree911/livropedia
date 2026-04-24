@@ -8,7 +8,7 @@ async function resetarSenha() {
     const novaSenha = document.getElementById("newPassword").value;
 
     const resposta = await fetch(
-        "https://controle-de-livros.onrender.com/reset-password",
+        "https://controle-de-livros-backend-1.onrender.com/reset-password",
         {
             method: "POST",
             headers: {

@@ -12,7 +12,7 @@ async function saveName() {
         return;
     }
 
-    const response = await fetch("https://controle-de-livros-backend.onrender.com/me", {
+    const response = await fetch("https://controle-de-livros-backend-1.onrender.com/me", {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -31,7 +31,7 @@ async function saveName() {
 }
 
 async function loadUser() {
-    const response = await fetch("https://controle-de-livros-backend.onrender.com/me", {
+    const response = await fetch("https://controle-de-livros-backend-1.onrender.com/me", {
         method: "GET",
         headers: {
             "Authorization": "Bearer " + token
@@ -76,7 +76,7 @@ async function deleteAccount() {
     try {
         console.log("TOKEN:", token);
         console.log("HEADER:", `Bearer ${token}`);
-        const resposta = await fetch("https://controle-de-livros-backend.onrender.com/users/me", {
+        const resposta = await fetch("https://controle-de-livros-backend-1.onrender.com/users/me", {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
