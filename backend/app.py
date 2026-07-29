@@ -1,7 +1,7 @@
 from flask import Flask
 from models import db
 from flask_jwt_extended import JWTManager
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 from routes import routes
 from flask_cors import CORS
 from auth import auth
@@ -33,6 +33,11 @@ app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 
 db.init_app(app)
 migrate = Migrate(app, db)
+
+# Aplica migrations pendentes no boot, pra nao depender de um Build Command
+# manual no Render (e pra Postgres novo/vazio ja subir com o schema certo).
+with app.app_context():
+    upgrade()
 
 app.register_blueprint(auth)
 
