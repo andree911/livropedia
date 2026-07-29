@@ -100,7 +100,7 @@ def recuperar_senha():
     token = gerarToken(email)
 
     print(f"Link de recuperação:")
-    print(f"http://127.0.0.1:5500/Front%20End/recover/recover.html?token={token}")
+    print(f"http://localhost:3000/redefinir-senha?token={token}")
 
     return{"mensagem": "Email enviado"}
 
