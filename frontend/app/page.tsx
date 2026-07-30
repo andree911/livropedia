@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { absolutizeCapaUrl, flaskFetch } from "@/lib/flask";
+import CardLivro from "@/components/CardLivro";
+import { flaskFetch } from "@/lib/flask";
 import type { LivrosPaginados } from "@/lib/types";
 
 async function buscarLivros(busca: string, page: number): Promise<LivrosPaginados> {
@@ -46,35 +47,61 @@ export default async function CatalogoPage({
           </Link>
         </p>
       ) : (
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-          {dados.livros.map((livro) => {
-            const capa = absolutizeCapaUrl(livro.capa_url);
-            return (
+        <>
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+            {dados.livros.map((livro) => (
               <li key={livro.id}>
-                <Link
-                  href={`/livros/${livro.id}`}
-                  className="block rounded border border-neutral-800 p-3 hover:border-neutral-600"
-                >
-                  {capa && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={capa}
-                      alt={livro.titulo}
-                      className="mb-2 h-48 w-full rounded object-cover"
-                    />
-                  )}
-                  <p className="font-medium">{livro.titulo}</p>
-                  <p className="text-sm text-neutral-400">{livro.autor}</p>
-                  {livro.total_avaliacoes > 0 && (
-                    <p className="text-sm text-yellow-500">
-                      ★ {livro.nota_media.toFixed(1)} ({livro.total_avaliacoes})
-                    </p>
-                  )}
-                </Link>
+                <CardLivro livro={livro} />
               </li>
-            );
-          })}
-        </ul>
+            ))}
+          </ul>
+          <PaginacaoCatalogo busca={busca} pagina={dados.page} totalPaginas={totalPaginas(dados)} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function totalPaginas(dados: LivrosPaginados) {
+  return Math.max(1, Math.ceil(dados.total / dados.per_page));
+}
+
+function PaginacaoCatalogo({
+  busca,
+  pagina,
+  totalPaginas,
+}: {
+  busca: string;
+  pagina: number;
+  totalPaginas: number;
+}) {
+  if (totalPaginas <= 1) return null;
+
+  const href = (p: number) => {
+    const params = new URLSearchParams();
+    if (busca) params.set("busca", busca);
+    params.set("page", String(p));
+    return `/?${params.toString()}`;
+  };
+
+  return (
+    <div className="flex items-center justify-between text-sm text-neutral-400">
+      {pagina > 1 ? (
+        <Link href={href(pagina - 1)} className="underline">
+          ← Anterior
+        </Link>
+      ) : (
+        <span />
+      )}
+      <span>
+        Página {pagina} de {totalPaginas}
+      </span>
+      {pagina < totalPaginas ? (
+        <Link href={href(pagina + 1)} className="underline">
+          Próxima →
+        </Link>
+      ) : (
+        <span />
       )}
     </div>
   );

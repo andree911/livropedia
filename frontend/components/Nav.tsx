@@ -32,6 +32,11 @@ export default function Nav({ usuario }: { usuario: Usuario | null }) {
               Adicionar
             </Link>
           )}
+          {usuario && (
+            <Link href="/listas" className="hover:underline">
+              Minhas listas
+            </Link>
+          )}
           {usuario ? (
             <>
               <Link href="/conta" className="hover:underline">

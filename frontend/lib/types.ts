@@ -49,3 +49,8 @@ export type AvaliacoesPaginadas = {
   page: number;
   per_page: number;
 };
+
+export const NOMES_LISTA = ["Quero ler", "Lendo", "Lido"] as const;
+export type NomeLista = (typeof NOMES_LISTA)[number];
+
+export type MinhasListas = Record<NomeLista, Livro[]>;

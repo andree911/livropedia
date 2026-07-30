@@ -1,10 +1,13 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 import { absolutizeCapaUrl, flaskFetch } from "@/lib/flask";
-import { getSession } from "@/lib/session";
-import type { AvaliacoesPaginadas, Livro } from "@/lib/types";
+import { getSession, getToken } from "@/lib/session";
+import type { AvaliacoesPaginadas, Livro, NomeLista } from "@/lib/types";
 import FormularioAvaliacao from "./formulario-avaliacao";
 import FormularioCapa from "./formulario-capa";
 import FormularioEdicaoLivro from "./formulario-edicao";
+import ListaToggles from "./lista-toggles";
 
 async function buscarLivro(id: string): Promise<Livro | null> {
   const res = await flaskFetch(`/livros/id/${id}`);
@@ -18,13 +21,51 @@ async function buscarAvaliacoes(id: string): Promise<AvaliacoesPaginadas> {
   return res.json();
 }
 
+async function buscarMinhasListas(id: string): Promise<NomeLista[]> {
+  const token = await getToken();
+  if (!token) return [];
+
+  const res = await flaskFetch(`/livros/${id}/minhas-listas`, { token });
+  if (!res.ok) return [];
+
+  const data = await res.json();
+  return data.listas ?? [];
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const livro = await buscarLivro(id);
+
+  if (!livro) {
+    return { title: "Livro não encontrado — Enciclopédia de Livros" };
+  }
+
+  const descricao = livro.resumo ? livro.resumo.slice(0, 160) : `Livro de ${livro.autor}`;
+  const capa = absolutizeCapaUrl(livro.capa_url);
+
+  return {
+    title: `${livro.titulo} — Enciclopédia de Livros`,
+    description: descricao,
+    openGraph: {
+      title: livro.titulo,
+      description: descricao,
+      images: capa ? [capa] : undefined,
+    },
+  };
+}
+
 export default async function LivroPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [livro, avaliacoes, usuario] = await Promise.all([
+  const [livro, avaliacoes, usuario, minhasListas] = await Promise.all([
     buscarLivro(id),
     buscarAvaliacoes(id),
     getSession(),
+    buscarMinhasListas(id),
   ]);
 
   if (!livro) notFound();
@@ -52,8 +93,11 @@ export default async function LivroPage({ params }: { params: Promise<{ id: stri
                 })`
               : "Ainda sem avaliações"}
           </p>
+          {usuario && <ListaToggles livroId={livro.id} listasAtuais={minhasListas} />}
           {livro.resumo && (
-            <p className="max-w-2xl whitespace-pre-line text-neutral-200">{livro.resumo}</p>
+            <div className="max-w-2xl space-y-3 text-neutral-200 [&_a]:underline [&_a]:text-neutral-300 [&_p]:leading-relaxed">
+              <ReactMarkdown>{livro.resumo}</ReactMarkdown>
+            </div>
           )}
         </div>
       </div>
