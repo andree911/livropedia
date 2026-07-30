@@ -58,10 +58,14 @@ export default function GoogleSignInButton() {
       callback: handleCredentialResponse,
     });
 
+    // Google só aceita um número fixo de pixels (máx. 400), então medimos
+    // a largura real do container pra o botão acompanhar o resto do form.
+    const largura = Math.min(buttonRef.current.offsetWidth, 400);
+
     window.google.accounts.id.renderButton(buttonRef.current, {
       theme: "outline",
       size: "large",
-      width: 300,
+      width: largura,
     });
   }
 
