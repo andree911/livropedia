@@ -8,6 +8,7 @@ from auth import auth
 from users import users
 from avaliacoes import avaliacoes
 from livros_externos import livros_externos
+from listas import listas
 from dotenv import load_dotenv
 import os
 
@@ -46,6 +47,8 @@ app.register_blueprint(users)
 app.register_blueprint(avaliacoes)
 
 app.register_blueprint(livros_externos)
+
+app.register_blueprint(listas)
 
 jwt = JWTManager(app)
 
