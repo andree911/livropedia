@@ -31,6 +31,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
+app.config["GOOGLE_CLIENT_ID"] = os.getenv("GOOGLE_CLIENT_ID")
 
 db.init_app(app)
 migrate = Migrate(app, db)

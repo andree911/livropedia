@@ -43,7 +43,7 @@ class Livro(db.Model):
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    senha = db.Column(db.String(200), nullable= False)
+    senha = db.Column(db.String(200), nullable=True)
     nome = db.Column(db.String(100))
 
 class Avaliacao(db.Model):

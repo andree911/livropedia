@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify, current_app
 from models import db, Usuario
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from itsdangerous import URLSafeTimedSerializer
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
 import bcrypt
 
 auth = Blueprint("auth", __name__)
@@ -79,9 +81,48 @@ def login():
     if not usuario:
         return jsonify({"erro": "Usuário não encontrado"}), 404
 
+    if not usuario.senha:
+        return jsonify({"erro": "Esta conta usa login com Google"}), 400
+
     if not bcrypt.checkpw(senha.encode("utf-8"), usuario.senha.encode("utf-8")):
         return jsonify({"erro": "Senha incorreta"}), 401
-    
+
+    token = create_access_token(identity=str(usuario.id))
+
+    return jsonify({"token": token})
+
+@auth.route("/auth/google", methods=["POST"])
+def login_google():
+    dados = request.get_json() or {}
+    credential = dados.get("credential")
+
+    if not credential:
+        return jsonify({"erro": "credential é obrigatório"}), 400
+
+    try:
+        payload = google_id_token.verify_oauth2_token(
+            credential, google_requests.Request(), current_app.config["GOOGLE_CLIENT_ID"]
+        )
+    except ValueError:
+        return jsonify({"erro": "Token do Google inválido"}), 401
+
+    email = payload.get("email")
+
+    if not email or not payload.get("email_verified"):
+        return jsonify({"erro": "Email do Google não verificado"}), 401
+
+    nome = payload.get("name")
+
+    usuario = Usuario.query.filter_by(email=email).first()
+
+    if not usuario:
+        usuario = Usuario(email=email, senha=None, nome=nome)
+        db.session.add(usuario)
+        db.session.commit()
+    elif not usuario.nome and nome:
+        usuario.nome = nome
+        db.session.commit()
+
     token = create_access_token(identity=str(usuario.id))
 
     return jsonify({"token": token})
