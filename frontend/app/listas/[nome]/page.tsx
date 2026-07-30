@@ -30,7 +30,7 @@ export default async function ListaPage({ params }: { params: Promise<{ nome: st
 
   return (
     <div className="space-y-6">
-      <div>
+      <div className="space-y-2">
         <Link href="/listas" className="text-sm text-neutral-400 hover:text-neutral-200">
           ← Minhas listas
         </Link>
