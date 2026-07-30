@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, Usuario
+from models import db, Usuario, Avaliacao, Lista, ListaItem, Livro
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import bcrypt
 from itsdangerous import URLSafeTimedSerializer
@@ -30,6 +30,16 @@ def delete_account():
 
     if not senha_valida:
         return jsonify({"erro": "Senha incorreta"}), 401
+
+    # Precisa limpar dependentes antes: Postgres bloqueia o delete se
+    # ainda houver avaliacoes/listas/capas referenciando esse usuario.
+    listas_ids = [l.id for l in Lista.query.filter_by(usuario_id=user_id).all()]
+    if listas_ids:
+        ListaItem.query.filter(ListaItem.lista_id.in_(listas_ids)).delete(synchronize_session=False)
+
+    Lista.query.filter_by(usuario_id=user_id).delete(synchronize_session=False)
+    Avaliacao.query.filter_by(usuario_id=user_id).delete(synchronize_session=False)
+    Livro.query.filter_by(capa_usuario_id=user_id).update({"capa_usuario_id": None})
 
     db.session.delete(usuario)
     db.session.commit()

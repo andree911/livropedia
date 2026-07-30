@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from models import Livro, db
+from models import Livro, Avaliacao, ListaItem, db
 from sqlalchemy import func
 from flask_jwt_extended import jwt_required, get_jwt_identity
 import uuid
@@ -122,6 +122,11 @@ def routes(app):
 
         if not livro:
             return jsonify({"erro": "livro nao encontrado"}), 404
+
+        # Precisa limpar dependentes antes: Postgres bloqueia o delete se
+        # ainda houver avaliacoes/itens de lista referenciando esse livro.
+        Avaliacao.query.filter_by(livro_id=id).delete(synchronize_session=False)
+        ListaItem.query.filter_by(livro_id=id).delete(synchronize_session=False)
 
         db.session.delete(livro)
         db.session.commit()
