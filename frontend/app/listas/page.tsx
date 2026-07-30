@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import CardLivro from "@/components/CardLivro";
-import { flaskFetch } from "@/lib/flask";
+import { absolutizeCapaUrl, flaskFetch } from "@/lib/flask";
 import { getSession, getToken } from "@/lib/session";
 import { NOMES_LISTA, type MinhasListas } from "@/lib/types";
 
@@ -21,27 +21,47 @@ export default async function ListasPage() {
   const listas = await buscarMinhasListas(token);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       <h1 className="text-xl font-semibold">Minhas listas</h1>
 
-      {NOMES_LISTA.map((nome) => (
-        <section key={nome} className="space-y-3">
-          <h2 className="text-lg font-medium">
-            {nome} ({listas[nome].length})
-          </h2>
-          {listas[nome].length === 0 ? (
-            <p className="text-neutral-400">Nenhum livro aqui ainda.</p>
-          ) : (
-            <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-              {listas[nome].map((livro) => (
-                <li key={livro.id}>
-                  <CardLivro livro={livro} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      ))}
+      <div className="grid gap-4 sm:grid-cols-3">
+        {NOMES_LISTA.map((nome) => {
+          const livros = listas[nome];
+          const capas = livros
+            .map((livro) => absolutizeCapaUrl(livro.capa_url))
+            .filter((capa): capa is string => Boolean(capa))
+            .slice(0, 4);
+
+          return (
+            <Link
+              key={nome}
+              href={`/listas/${encodeURIComponent(nome)}`}
+              className="block rounded border border-neutral-800 p-4 hover:border-neutral-600"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-medium">{nome}</h2>
+                <span className="text-sm text-neutral-400">{livros.length}</span>
+              </div>
+
+              {capas.length > 0 ? (
+                <div className="mt-4 flex -space-x-4">
+                  {capas.map((capa, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={i}
+                      src={capa}
+                      alt=""
+                      className="h-20 w-14 rounded border-2 border-neutral-950 object-cover"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-neutral-500">Nenhum livro aqui ainda.</p>
+              )}
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -63,6 +64,15 @@ export default function LoginPage() {
           {enviando ? "Entrando..." : "Entrar"}
         </button>
       </form>
+
+      <div className="flex items-center gap-3 text-xs text-neutral-500">
+        <div className="h-px flex-1 bg-neutral-800" />
+        ou
+        <div className="h-px flex-1 bg-neutral-800" />
+      </div>
+
+      <GoogleSignInButton />
+
       <div className="flex justify-between text-sm text-neutral-400">
         <Link href="/register" className="underline">
           Criar conta
