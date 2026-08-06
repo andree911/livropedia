@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { absolutizeCapaUrl, flaskFetch } from "@/lib/flask";
 import { getSession, getToken } from "@/lib/session";
-import type { AvaliacoesPaginadas, Livro, NomeLista } from "@/lib/types";
+import type { Avaliacao, AvaliacoesPaginadas, Livro, NomeLista } from "@/lib/types";
 import FormularioAvaliacao from "./formulario-avaliacao";
 import FormularioCapa from "./formulario-capa";
 import FormularioEdicaoLivro from "./formulario-edicao";
@@ -30,6 +30,17 @@ async function buscarMinhasListas(id: string): Promise<NomeLista[]> {
 
   const data = await res.json();
   return data.listas ?? [];
+}
+
+async function buscarMinhaAvaliacao(id: string): Promise<Avaliacao | null> {
+  const token = await getToken();
+  if (!token) return null;
+
+  const res = await flaskFetch(`/livros/${id}/minha-avaliacao`, { token });
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  return data.avaliacao ?? null;
 }
 
 export async function generateMetadata({
@@ -61,11 +72,12 @@ export async function generateMetadata({
 export default async function LivroPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [livro, avaliacoes, usuario, minhasListas] = await Promise.all([
+  const [livro, avaliacoes, usuario, minhasListas, minhaAvaliacao] = await Promise.all([
     buscarLivro(id),
     buscarAvaliacoes(id),
     getSession(),
     buscarMinhasListas(id),
+    buscarMinhaAvaliacao(id),
   ]);
 
   if (!livro) notFound();
@@ -103,7 +115,7 @@ export default async function LivroPage({ params }: { params: Promise<{ id: stri
       </div>
 
       {usuario ? (
-        <FormularioAvaliacao livroId={livro.id} />
+        <FormularioAvaliacao livroId={livro.id} avaliacaoExistente={minhaAvaliacao} />
       ) : (
         <p className="text-neutral-400">
           <a href="/login" className="underline">

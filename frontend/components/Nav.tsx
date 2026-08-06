@@ -8,14 +8,57 @@ import type { Usuario } from "@/lib/types";
 export default function Nav({ usuario }: { usuario: Usuario | null }) {
   const router = useRouter();
   const [saindo, setSaindo] = useState(false);
+  const [menuAberto, setMenuAberto] = useState(false);
 
   async function handleLogout() {
     setSaindo(true);
     await fetch("/api/auth/logout", { method: "POST" });
     setSaindo(false);
+    setMenuAberto(false);
     router.push("/login");
     router.refresh();
   }
+
+  const links = (
+    <>
+      <Link href="/" className="hover:underline" onClick={() => setMenuAberto(false)}>
+        Catálogo
+      </Link>
+      {usuario && (
+        <Link href="/adicionar" className="hover:underline" onClick={() => setMenuAberto(false)}>
+          Adicionar
+        </Link>
+      )}
+      {usuario && (
+        <Link href="/listas" className="hover:underline" onClick={() => setMenuAberto(false)}>
+          Minhas listas
+        </Link>
+      )}
+      {usuario ? (
+        <>
+          <Link href="/conta" className="hover:underline" onClick={() => setMenuAberto(false)}>
+            {usuario.nome || usuario.email}
+          </Link>
+          <button
+            onClick={handleLogout}
+            disabled={saindo}
+            className="rounded bg-neutral-800 px-3 py-1 text-left hover:bg-neutral-700 disabled:opacity-50 sm:text-center"
+          >
+            {saindo ? "Saindo..." : "Sair"}
+          </button>
+        </>
+      ) : (
+        <>
+          <Link href="/login" className="hover:underline" onClick={() => setMenuAberto(false)}>
+            Entrar
+          </Link>
+          <Link href="/register" className="hover:underline" onClick={() => setMenuAberto(false)}>
+            Criar conta
+          </Link>
+        </>
+      )}
+    </>
+  );
 
   return (
     <nav className="border-b border-neutral-800 bg-neutral-950 text-neutral-100">
@@ -23,45 +66,24 @@ export default function Nav({ usuario }: { usuario: Usuario | null }) {
         <Link href="/" className="text-lg font-semibold">
           Enciclopédia de Livros
         </Link>
-        <div className="flex items-center gap-4 text-sm">
-          <Link href="/" className="hover:underline">
-            Catálogo
-          </Link>
-          {usuario && (
-            <Link href="/adicionar" className="hover:underline">
-              Adicionar
-            </Link>
-          )}
-          {usuario && (
-            <Link href="/listas" className="hover:underline">
-              Minhas listas
-            </Link>
-          )}
-          {usuario ? (
-            <>
-              <Link href="/conta" className="hover:underline">
-                {usuario.nome || usuario.email}
-              </Link>
-              <button
-                onClick={handleLogout}
-                disabled={saindo}
-                className="rounded bg-neutral-800 px-3 py-1 hover:bg-neutral-700 disabled:opacity-50"
-              >
-                Sair
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="hover:underline">
-                Entrar
-              </Link>
-              <Link href="/register" className="hover:underline">
-                Criar conta
-              </Link>
-            </>
-          )}
-        </div>
+
+        <div className="hidden items-center gap-4 text-sm sm:flex">{links}</div>
+
+        <button
+          onClick={() => setMenuAberto((aberto) => !aberto)}
+          aria-label={menuAberto ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={menuAberto}
+          className="flex h-9 w-9 items-center justify-center rounded border border-neutral-700 text-lg hover:bg-neutral-800 sm:hidden"
+        >
+          {menuAberto ? "✕" : "☰"}
+        </button>
       </div>
+
+      {menuAberto && (
+        <div className="flex flex-col gap-3 border-t border-neutral-800 px-4 py-3 text-sm sm:hidden">
+          {links}
+        </div>
+      )}
     </nav>
   );
 }
