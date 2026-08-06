@@ -13,14 +13,30 @@ def allowed_file(filename):
         filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def routes(app):
+    ORDENACOES = {
+        "nota": Livro.nota_media.desc(),
+        "ano": Livro.ano_publicacao.desc(),
+        "titulo": Livro.titulo.asc(),
+    }
+
     @app.route('/livros', methods=['GET'])
     def obter_livros():
         page = request.args.get("page", 1, type=int)
         per_page = min(request.args.get("per_page", 20, type=int), 50)
+        busca = request.args.get("busca", "").strip()
+        ordenar = request.args.get("ordenar", "").strip()
 
-        paginado = Livro.query.order_by(Livro.id).paginate(
-            page=page, per_page=per_page, error_out=False
-        )
+        query = Livro.query
+
+        if busca:
+            termo = f"%{busca}%"
+            query = query.filter(
+                db.or_(Livro.titulo.ilike(termo), Livro.autor.ilike(termo))
+            )
+
+        query = query.order_by(ORDENACOES.get(ordenar, Livro.id.asc()))
+
+        paginado = query.paginate(page=page, per_page=per_page, error_out=False)
 
         return jsonify({
             "livros": [l.to_dict() for l in paginado.items],
@@ -39,31 +55,6 @@ def routes(app):
         if not livro:
             return jsonify({"erro": "livro nao encontrado"}), 404
         return jsonify(livro.to_dict())
-
-    @app.route('/livros/titulo/<string:titulo>', methods=['GET'])
-    def obter_livro_por_titulo(titulo):
-        page = request.args.get("page", 1, type=int)
-        per_page = min(request.args.get("per_page", 20, type=int), 50)
-
-        paginado = Livro.query.filter(
-            Livro.titulo.ilike(f"%{titulo}%")
-            ).order_by(Livro.id).paginate(
-                page=page, per_page=per_page, error_out=False
-            )
-
-        return jsonify({
-            "livros": [
-                {
-                    "id": livro.id,
-                    "titulo": livro.titulo,
-                    "autor": livro.autor
-                }
-                for livro in paginado.items
-            ],
-            "total": paginado.total,
-            "page": paginado.page,
-            "per_page": per_page
-        })
 
     @app.route('/livros/<int:id>' ,methods=['PUT'])
     @jwt_required()

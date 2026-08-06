@@ -40,6 +40,18 @@ def listar_avaliacoes(livro_id):
     })
 
 
+@avaliacoes.route("/livros/<int:livro_id>/minha-avaliacao", methods=["GET"])
+@jwt_required()
+def minha_avaliacao(livro_id):
+    usuario_id = int(get_jwt_identity())
+
+    avaliacao = Avaliacao.query.filter_by(
+        livro_id=livro_id, usuario_id=usuario_id
+    ).first()
+
+    return jsonify({"avaliacao": avaliacao.to_dict() if avaliacao else None})
+
+
 @avaliacoes.route("/livros/<int:livro_id>/avaliacoes", methods=["POST"])
 @jwt_required()
 def criar_ou_atualizar_avaliacao(livro_id):
