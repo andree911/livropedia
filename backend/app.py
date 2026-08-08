@@ -9,7 +9,10 @@ from users import users
 from avaliacoes import avaliacoes
 from livros_externos import livros_externos
 from listas import listas
+from traducao import traducao
+from estatisticas import estatisticas
 from dotenv import load_dotenv
+from datetime import timedelta
 import os
 
 
@@ -33,6 +36,15 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 app.config["GOOGLE_CLIENT_ID"] = os.getenv("GOOGLE_CLIENT_ID")
 
+app.config["SMTP_USER"] = os.getenv("SMTP_USER")
+app.config["SMTP_PASSWORD"] = os.getenv("SMTP_PASSWORD")
+app.config["FRONTEND_URL"] = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+# Token de acesso curto (sensivel, vai e volta em toda requisicao); refresh
+# token de longa duracao renova ele sem precisar logar de novo.
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=30)
+
 db.init_app(app)
 migrate = Migrate(app, db)
 
@@ -50,6 +62,10 @@ app.register_blueprint(avaliacoes)
 app.register_blueprint(livros_externos)
 
 app.register_blueprint(listas)
+
+app.register_blueprint(traducao)
+
+app.register_blueprint(estatisticas)
 
 jwt = JWTManager(app)
 

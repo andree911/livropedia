@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from models import db, Usuario, Avaliacao, Lista, ListaItem, Livro
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from traducao import IDIOMAS_SUPORTADOS
 import bcrypt
 from itsdangerous import URLSafeTimedSerializer
 
@@ -49,7 +50,7 @@ def delete_account():
 
 @users.route("/me", methods=["PATCH"])
 @jwt_required()
-def add_name():
+def atualizar_me():
     user_id = get_jwt_identity()
 
     usuario = Usuario.query.get(user_id)
@@ -57,19 +58,25 @@ def add_name():
     if not usuario:
         return jsonify({"erro": "Usuário não encontrado"}), 404
 
-    if usuario.nome:
-        return jsonify({"erro": "Nome já definido"}), 400
-
-    dados = request.get_json()
+    dados = request.get_json() or {}
 
     if "nome" in dados:
+        if usuario.nome:
+            return jsonify({"erro": "Nome já definido"}), 400
         usuario.nome = dados["nome"]
+
+    if "idioma" in dados:
+        idioma = dados["idioma"] or None
+        if idioma is not None and idioma not in IDIOMAS_SUPORTADOS:
+            return jsonify({"erro": f"idioma deve ser um de: {', '.join(IDIOMAS_SUPORTADOS)}"}), 400
+        usuario.idioma = idioma
 
     db.session.commit()
 
     return jsonify({
         "msg": "Dados atualizados com sucesso",
-        "nome": usuario.nome
+        "nome": usuario.nome,
+        "idioma": usuario.idioma
     }), 200
 
 @users.route("/me", methods=["GET"])
@@ -83,5 +90,6 @@ def get_me():
 
     return jsonify({
         "email": usuario.email,
-        "nome": usuario.nome
+        "nome": usuario.nome,
+        "idioma": usuario.idioma
     }), 200

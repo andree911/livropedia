@@ -45,6 +45,7 @@ class Usuario(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(200), nullable=True)
     nome = db.Column(db.String(100))
+    idioma = db.Column(db.String(5), nullable=True)
 
 class Avaliacao(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -86,3 +87,24 @@ class ListaItem(db.Model):
     __table_args__ = (
         db.UniqueConstraint('lista_id', 'livro_id', name='uq_lista_item'),
     )
+
+class LivroTraducao(db.Model):
+    # Cache de titulo/resumo traduzidos por livro+idioma, pra nao chamar a
+    # API de traducao de novo toda vez que alguem com o mesmo idioma abre
+    # o mesmo livro.
+    id = db.Column(db.Integer, primary_key=True)
+    livro_id = db.Column(db.Integer, db.ForeignKey('livro.id'), nullable=False)
+    idioma = db.Column(db.String(5), nullable=False)
+    titulo = db.Column(db.String(200), nullable=True)
+    resumo = db.Column(db.Text, nullable=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('livro_id', 'idioma', name='uq_livro_traducao'),
+    )
+
+    def to_dict(self):
+        return {
+            "titulo": self.titulo,
+            "resumo": self.resumo,
+            "idioma": self.idioma,
+        }

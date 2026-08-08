@@ -1,9 +1,15 @@
 from flask import Blueprint, request, jsonify, current_app
 from models import db, Usuario
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    jwt_required,
+    get_jwt_identity,
+)
 from itsdangerous import URLSafeTimedSerializer
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
+from email_utils import enviar_email
 import bcrypt
 
 auth = Blueprint("auth", __name__)
@@ -54,10 +60,12 @@ def register():
         db.session.commit()
 
         access_token = create_access_token(identity=str(novo_usuario.id))
+        refresh_token = create_refresh_token(identity=str(novo_usuario.id))
 
         return jsonify({
             "msg": "Usuário criado",
-            "access_token": access_token
+            "access_token": access_token,
+            "refresh_token": refresh_token
         }), 201
 
     except Exception as e:
@@ -88,8 +96,9 @@ def login():
         return jsonify({"erro": "Senha incorreta"}), 401
 
     token = create_access_token(identity=str(usuario.id))
+    refresh_token = create_refresh_token(identity=str(usuario.id))
 
-    return jsonify({"token": token})
+    return jsonify({"token": token, "refresh_token": refresh_token})
 
 @auth.route("/auth/google", methods=["POST"])
 def login_google():
@@ -124,8 +133,15 @@ def login_google():
         db.session.commit()
 
     token = create_access_token(identity=str(usuario.id))
+    refresh_token = create_refresh_token(identity=str(usuario.id))
 
-    return jsonify({"token": token})
+    return jsonify({"token": token, "refresh_token": refresh_token})
+
+@auth.route("/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    novo_access_token = create_access_token(identity=get_jwt_identity())
+    return jsonify({"access_token": novo_access_token})
 
 @auth.route("/forgot-password", methods=["POST"])
 def recuperar_senha():
@@ -139,9 +155,18 @@ def recuperar_senha():
         return{"mensagem": "Se o email existir, enviaremos instruções"}
     
     token = gerarToken(email)
+    link = f"{current_app.config['FRONTEND_URL']}/redefinir-senha?token={token}"
 
-    print(f"Link de recuperação:")
-    print(f"http://localhost:3000/redefinir-senha?token={token}")
+    enviado = enviar_email(
+        email,
+        "Recuperação de senha — Enciclopédia de Livros",
+        f"Recebemos um pedido pra redefinir sua senha.\n\n"
+        f"Clique no link abaixo (válido por 15 minutos):\n{link}\n\n"
+        f"Se não foi você, pode ignorar este email."
+    )
+
+    if not enviado:
+        print(f"[dev] Link de recuperação: {link}")
 
     return{"mensagem": "Email enviado"}
 
