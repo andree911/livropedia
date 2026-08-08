@@ -40,6 +40,32 @@ def listar_avaliacoes(livro_id):
     })
 
 
+@avaliacoes.route("/minhas-avaliacoes", methods=["GET"])
+@jwt_required()
+def minhas_avaliacoes():
+    usuario_id = int(get_jwt_identity())
+
+    minhas = (
+        Avaliacao.query.filter_by(usuario_id=usuario_id)
+        .order_by(Avaliacao.criado_em.desc())
+        .all()
+    )
+
+    livros = {
+        l.id: l
+        for l in Livro.query.filter(Livro.id.in_([a.livro_id for a in minhas])).all()
+    }
+
+    resultado = []
+    for avaliacao in minhas:
+        item = avaliacao.to_dict()
+        livro = livros.get(avaliacao.livro_id)
+        item["livro"] = livro.to_dict() if livro else None
+        resultado.append(item)
+
+    return jsonify(resultado)
+
+
 @avaliacoes.route("/livros/<int:livro_id>/minha-avaliacao", methods=["GET"])
 @jwt_required()
 def minha_avaliacao(livro_id):

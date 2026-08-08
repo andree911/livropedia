@@ -88,6 +88,26 @@ class ListaItem(db.Model):
         db.UniqueConstraint('lista_id', 'livro_id', name='uq_lista_item'),
     )
 
+class LivroExternoCache(db.Model):
+    # Cache de dados ja enriquecidos de resultados de busca externa (Google
+    # Books + fallback Open Library), por external_id. Evita repetir o
+    # fallback (que faz chamadas extras pra Open Library) toda vez que o
+    # mesmo livro aparece numa busca nova, de qualquer usuario.
+    id = db.Column(db.Integer, primary_key=True)
+    external_id = db.Column(db.String(100), nullable=False)
+    titulo = db.Column(db.String(200), nullable=True)
+    autor = db.Column(db.String(200), nullable=True)
+    capa_url = db.Column(db.String(250), nullable=True)
+    resumo = db.Column(db.Text, nullable=True)
+    isbn = db.Column(db.String(20), nullable=True)
+    ano_publicacao = db.Column(db.Integer, nullable=True)
+    atualizado_em = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        db.UniqueConstraint('external_id', name='uq_livro_externo_cache_external_id'),
+    )
+
+
 class LivroTraducao(db.Model):
     # Cache de titulo/resumo traduzidos por livro+idioma, pra nao chamar a
     # API de traducao de novo toda vez que alguem com o mesmo idioma abre

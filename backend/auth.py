@@ -159,7 +159,7 @@ def recuperar_senha():
 
     enviado = enviar_email(
         email,
-        "Recuperação de senha — Enciclopédia de Livros",
+        "Recuperação de senha — Livropédia",
         f"Recebemos um pedido pra redefinir sua senha.\n\n"
         f"Clique no link abaixo (válido por 15 minutos):\n{link}\n\n"
         f"Se não foi você, pode ignorar este email."
