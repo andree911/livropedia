@@ -8,8 +8,8 @@ export async function POST(request: NextRequest) {
   } catch {
     // Requisicao cancelada no meio (ex: efeito refeito em StrictMode) -
     // degrada pro mesmo formato que "sem traducao ainda", sem quebrar.
-    return NextResponse.json({ textos: [] });
+    return NextResponse.json({ titulos: {} });
   }
 
-  return proxyAuthed("/livros/traduzir-textos", { method: "POST", body });
+  return proxyAuthed("/livros/traduzir-titulos", { method: "POST", body });
 }

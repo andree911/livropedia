@@ -130,67 +130,74 @@ export default function AdicionarLivro() {
         <p className="text-neutral-400">Busque no Google Books e importe o livro.</p>
       </div>
 
-      <div className="relative">
-        <input
-          value={busca}
-          onChange={handleBuscaChange}
-          placeholder="Título do livro..."
-          className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2"
-          autoFocus
-        />
-        {buscando && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-400">
-            Buscando...
-          </span>
-        )}
-      </div>
+      <input
+        value={busca}
+        onChange={handleBuscaChange}
+        placeholder="Título do livro..."
+        className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2"
+        autoFocus
+      />
 
       {erro && <p className="text-sm text-red-500">{erro}</p>}
 
-      <ul className="space-y-2">
-        {resultados.map((resultado) => (
-          <li
-            key={resultado.external_id}
-            className="flex items-center justify-between gap-4 rounded border border-neutral-800 p-3"
-          >
-            <div className="flex items-center gap-3">
-              {resultado.capa_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={resultado.capa_url}
-                  alt={resultado.titulo ?? ""}
-                  className="h-16 w-11 rounded object-cover"
-                />
-              )}
-              <div>
-                <p className="font-medium">
-                  {titulosTraduzidos[resultado.external_id] ?? resultado.titulo}
-                </p>
-                <p className="text-sm text-neutral-400">
-                  {resultado.autor}
-                  {resultado.ano_publicacao ? ` · ${resultado.ano_publicacao}` : ""}
-                </p>
+      {buscando ? (
+        <ul className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <li key={i} className="flex items-center gap-3 rounded border border-neutral-800 p-3">
+              <div className="h-16 w-11 shrink-0 animate-pulse rounded bg-neutral-800" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-2/3 animate-pulse rounded bg-neutral-800" />
+                <div className="h-3 w-1/3 animate-pulse rounded bg-neutral-800" />
               </div>
-            </div>
-            {resultado.livro_id ? (
-              <Link
-                href={`/livros/${resultado.livro_id}`}
-                className="shrink-0 rounded border border-neutral-700 px-3 py-1 text-sm hover:bg-neutral-800"
-              >
-                Já no catálogo
-              </Link>
-            ) : (
-              <button
-                onClick={() => handleImportar(resultado)}
-                disabled={importando === resultado.external_id}
-                className="shrink-0 rounded bg-neutral-800 px-3 py-1 text-sm hover:bg-neutral-700 disabled:opacity-50"
-              >
-                {importando === resultado.external_id ? "Importando..." : "Importar"}
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <ul className="space-y-2">
+          {resultados.map((resultado) => (
+            <li
+              key={resultado.external_id}
+              className="flex items-center justify-between gap-4 rounded border border-neutral-800 p-3"
+            >
+              <div className="flex items-center gap-3">
+                {resultado.capa_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={resultado.capa_url}
+                    alt={resultado.titulo ?? ""}
+                    className="h-16 w-11 rounded object-cover"
+                  />
+                )}
+                <div>
+                  <p className="font-medium">
+                    {titulosTraduzidos[resultado.external_id] ?? resultado.titulo}
+                  </p>
+                  <p className="text-sm text-neutral-400">
+                    {resultado.autor}
+                    {resultado.ano_publicacao ? ` · ${resultado.ano_publicacao}` : ""}
+                  </p>
+                </div>
+              </div>
+              {resultado.livro_id ? (
+                <Link
+                  href={`/livros/${resultado.livro_id}`}
+                  className="shrink-0 rounded border border-neutral-700 px-3 py-1 text-sm hover:bg-neutral-800"
+                >
+                  Já no catálogo
+                </Link>
+              ) : (
+                <button
+                  onClick={() => handleImportar(resultado)}
+                  disabled={importando === resultado.external_id}
+                  className="shrink-0 rounded bg-neutral-800 px-3 py-1 text-sm hover:bg-neutral-700 disabled:opacity-50"
+                >
+                  {importando === resultado.external_id ? "Importando..." : "Importar"}
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

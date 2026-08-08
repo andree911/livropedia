@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Enciclopédia de Livros",
+  title: "Livropédia",
   description: "Wikipedia + IMDB de livros: sinopses, edições e avaliações da comunidade.",
 };
 

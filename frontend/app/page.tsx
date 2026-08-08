@@ -1,7 +1,6 @@
 import Link from "next/link";
-import CardLivro from "@/components/CardLivro";
+import GradeLivros from "@/components/GradeLivros";
 import { flaskFetch } from "@/lib/flask";
-import { buscarTitulosTraduzidos } from "@/lib/traducao";
 import type { LivrosPaginados } from "@/lib/types";
 
 async function buscarLivros(busca: string, ordenar: string, page: number): Promise<LivrosPaginados> {
@@ -21,11 +20,6 @@ export default async function CatalogoPage({
 }) {
   const { busca = "", ordenar = "", page = "1" } = await searchParams;
   const dados = await buscarLivros(busca, ordenar, Number(page) || 1);
-  const titulosTraduzidos = await buscarTitulosTraduzidos(dados.livros.map((livro) => livro.id));
-  const livrosExibidos = dados.livros.map((livro) => ({
-    ...livro,
-    titulo: titulosTraduzidos[livro.id] ?? livro.titulo,
-  }));
 
   return (
     <div className="space-y-6">
@@ -58,19 +52,16 @@ export default async function CatalogoPage({
       {dados.livros.length === 0 ? (
         <p className="text-neutral-400">
           Nenhum livro encontrado.{" "}
-          <Link href="/adicionar" className="underline">
+          <Link
+            href={busca ? `/adicionar?q=${encodeURIComponent(busca)}` : "/adicionar"}
+            className="underline"
+          >
             Que tal adicionar um?
           </Link>
         </p>
       ) : (
         <>
-          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-            {livrosExibidos.map((livro) => (
-              <li key={livro.id}>
-                <CardLivro livro={livro} />
-              </li>
-            ))}
-          </ul>
+          <GradeLivros livros={dados.livros} />
           <PaginacaoCatalogo
             busca={busca}
             ordenar={ordenar}

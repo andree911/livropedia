@@ -22,6 +22,10 @@ export type Avaliacao = {
   criado_em: string;
 };
 
+export type MinhaAvaliacao = Avaliacao & {
+  livro: Livro | null;
+};
+
 export type Usuario = {
   email: string;
   nome: string | null;

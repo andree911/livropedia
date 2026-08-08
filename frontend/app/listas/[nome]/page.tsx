@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import CardLivro from "@/components/CardLivro";
+import GradeLivros from "@/components/GradeLivros";
 import { flaskFetch } from "@/lib/flask";
 import { getSession, getToken } from "@/lib/session";
-import { buscarTitulosTraduzidos } from "@/lib/traducao";
 import { NOMES_LISTA, type MinhasListas, type NomeLista } from "@/lib/types";
 
 async function buscarMinhasListas(token: string): Promise<MinhasListas> {
@@ -27,11 +26,7 @@ export default async function ListaPage({ params }: { params: Promise<{ nome: st
 
   const token = (await getToken())!;
   const listas = await buscarMinhasListas(token);
-  const titulosTraduzidos = await buscarTitulosTraduzidos(listas[nome].map((livro) => livro.id));
-  const livros = listas[nome].map((livro) => ({
-    ...livro,
-    titulo: titulosTraduzidos[livro.id] ?? livro.titulo,
-  }));
+  const livros = listas[nome];
 
   return (
     <div className="space-y-6">
@@ -47,13 +42,7 @@ export default async function ListaPage({ params }: { params: Promise<{ nome: st
       {livros.length === 0 ? (
         <p className="text-neutral-400">Nenhum livro aqui ainda.</p>
       ) : (
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-          {livros.map((livro) => (
-            <li key={livro.id}>
-              <CardLivro livro={livro} />
-            </li>
-          ))}
-        </ul>
+        <GradeLivros livros={livros} />
       )}
     </div>
   );

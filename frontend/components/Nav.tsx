@@ -35,6 +35,15 @@ export default function Nav({ usuario }: { usuario: Usuario | null }) {
         </Link>
       )}
       {usuario && (
+        <Link
+          href="/minhas-avaliacoes"
+          className="hover:underline"
+          onClick={() => setMenuAberto(false)}
+        >
+          Avaliações
+        </Link>
+      )}
+      {usuario && (
         <Link href="/estatisticas" className="hover:underline" onClick={() => setMenuAberto(false)}>
           Estatísticas
         </Link>
@@ -69,7 +78,7 @@ export default function Nav({ usuario }: { usuario: Usuario | null }) {
     <nav className="border-b border-neutral-800 bg-neutral-950 text-neutral-100">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <Link href="/" className="text-lg font-semibold">
-          Enciclopédia de Livros
+          Livropédia
         </Link>
 
         <div className="hidden items-center gap-4 text-sm sm:flex">{links}</div>
