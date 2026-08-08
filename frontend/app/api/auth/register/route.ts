@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { flaskFetch } from "@/lib/flask";
-import { setToken } from "@/lib/session";
+import { setTokens } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   const data = await res.json().catch(() => null);
 
   if (res.ok && data?.access_token) {
-    await setToken(data.access_token);
+    await setTokens(data.access_token, data.refresh_token);
   }
 
   return NextResponse.json(data, { status: res.status });

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { flaskFetch } from "@/lib/flask";
-import { clearToken, getToken } from "@/lib/session";
+import { clearTokens, getToken } from "@/lib/session";
 import { proxyAuthed } from "@/lib/api-helpers";
 
 export async function GET() {
@@ -23,7 +23,7 @@ export async function DELETE(request: NextRequest) {
   const data = await res.json().catch(() => null);
 
   if (res.ok) {
-    await clearToken();
+    await clearTokens();
   }
 
   return NextResponse.json(data, { status: res.status });

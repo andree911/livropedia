@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import CardLivro from "@/components/CardLivro";
 import { flaskFetch } from "@/lib/flask";
 import { getSession, getToken } from "@/lib/session";
+import { buscarTitulosTraduzidos } from "@/lib/traducao";
 import { NOMES_LISTA, type MinhasListas, type NomeLista } from "@/lib/types";
 
 async function buscarMinhasListas(token: string): Promise<MinhasListas> {
@@ -26,7 +27,11 @@ export default async function ListaPage({ params }: { params: Promise<{ nome: st
 
   const token = (await getToken())!;
   const listas = await buscarMinhasListas(token);
-  const livros = listas[nome];
+  const titulosTraduzidos = await buscarTitulosTraduzidos(listas[nome].map((livro) => livro.id));
+  const livros = listas[nome].map((livro) => ({
+    ...livro,
+    titulo: titulosTraduzidos[livro.id] ?? livro.titulo,
+  }));
 
   return (
     <div className="space-y-6">

@@ -25,6 +25,23 @@ export type Avaliacao = {
 export type Usuario = {
   email: string;
   nome: string | null;
+  idioma: string | null;
+};
+
+export const IDIOMAS_SUPORTADOS: Record<string, string> = {
+  pt: "Português",
+  en: "English",
+  es: "Español",
+  fr: "Français",
+  de: "Deutsch",
+  it: "Italiano",
+  ja: "日本語",
+};
+
+export type Traducao = {
+  titulo: string | null;
+  resumo: string | null;
+  idioma: string;
 };
 
 export type ResultadoBuscaExterna = {
@@ -34,6 +51,8 @@ export type ResultadoBuscaExterna = {
   capa_url: string | null;
   ano_publicacao: number | null;
   isbn: string | null;
+  resumo: string | null;
+  livro_id: number | null;
 };
 
 export type LivrosPaginados = {
@@ -54,3 +73,12 @@ export const NOMES_LISTA = ["Quero ler", "Lendo", "Lido"] as const;
 export type NomeLista = (typeof NOMES_LISTA)[number];
 
 export type MinhasListas = Record<NomeLista, Livro[]>;
+
+export type Estatisticas = {
+  total_lidos: number;
+  total_avaliacoes: number;
+  nota_media_dada: number;
+  lidos_por_ano: Record<string, number>;
+  distribuicao_notas: Record<string, number>;
+  autores_mais_lidos: { autor: string; total: number }[];
+};

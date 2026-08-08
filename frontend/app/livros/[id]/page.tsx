@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { absolutizeCapaUrl, flaskFetch } from "@/lib/flask";
 import { getSession, getToken } from "@/lib/session";
-import type { Avaliacao, AvaliacoesPaginadas, Livro, NomeLista } from "@/lib/types";
+import type { Avaliacao, AvaliacoesPaginadas, Livro, NomeLista, Traducao } from "@/lib/types";
 import FormularioAvaliacao from "./formulario-avaliacao";
 import FormularioCapa from "./formulario-capa";
 import FormularioEdicaoLivro from "./formulario-edicao";
@@ -43,6 +43,17 @@ async function buscarMinhaAvaliacao(id: string): Promise<Avaliacao | null> {
   return data.avaliacao ?? null;
 }
 
+async function buscarTraducao(id: string): Promise<Traducao | null> {
+  const token = await getToken();
+  if (!token) return null;
+
+  const res = await flaskFetch(`/livros/${id}/traducao`, { token });
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  return data.traducao ?? null;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -72,27 +83,30 @@ export async function generateMetadata({
 export default async function LivroPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [livro, avaliacoes, usuario, minhasListas, minhaAvaliacao] = await Promise.all([
+  const [livro, avaliacoes, usuario, minhasListas, minhaAvaliacao, traducao] = await Promise.all([
     buscarLivro(id),
     buscarAvaliacoes(id),
     getSession(),
     buscarMinhasListas(id),
     buscarMinhaAvaliacao(id),
+    buscarTraducao(id),
   ]);
 
   if (!livro) notFound();
 
   const capa = absolutizeCapaUrl(livro.capa_url);
+  const titulo = traducao?.titulo || livro.titulo;
+  const resumo = traducao?.resumo || livro.resumo;
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-6 sm:flex-row">
         {capa && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={capa} alt={livro.titulo} className="h-72 w-48 rounded object-cover" />
+          <img src={capa} alt={titulo} className="h-72 w-48 rounded object-cover" />
         )}
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold">{livro.titulo}</h1>
+          <h1 className="text-2xl font-semibold">{titulo}</h1>
           <p className="text-neutral-400">{livro.autor}</p>
           {livro.ano_publicacao && (
             <p className="text-sm text-neutral-500">Publicado em {livro.ano_publicacao}</p>
@@ -106,9 +120,14 @@ export default async function LivroPage({ params }: { params: Promise<{ id: stri
               : "Ainda sem avaliações"}
           </p>
           {usuario && <ListaToggles livroId={livro.id} listasAtuais={minhasListas} />}
-          {livro.resumo && (
-            <div className="max-w-2xl space-y-3 text-neutral-200 [&_a]:underline [&_a]:text-neutral-300 [&_p]:leading-relaxed">
-              <ReactMarkdown>{livro.resumo}</ReactMarkdown>
+          {resumo && (
+            <div className="max-w-2xl space-y-1">
+              {traducao && (
+                <p className="text-xs text-neutral-500">Traduzido automaticamente</p>
+              )}
+              <div className="space-y-3 text-neutral-200 [&_a]:underline [&_a]:text-neutral-300 [&_p]:leading-relaxed">
+                <ReactMarkdown>{resumo}</ReactMarkdown>
+              </div>
             </div>
           )}
         </div>

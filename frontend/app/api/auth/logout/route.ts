@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { clearToken } from "@/lib/session";
+import { clearTokens } from "@/lib/session";
 
 export async function POST() {
-  await clearToken();
+  await clearTokens();
   return NextResponse.json({ mensagem: "Logout realizado" });
 }

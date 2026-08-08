@@ -2,13 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import type { Usuario } from "@/lib/types";
+import { IDIOMAS_SUPORTADOS, type Usuario } from "@/lib/types";
 
 export default function ContaForm({ usuario }: { usuario: Usuario }) {
   const router = useRouter();
   const [nome, setNome] = useState(usuario.nome ?? "");
+  const [idioma, setIdioma] = useState(usuario.idioma ?? "");
   const [senha, setSenha] = useState("");
   const [salvando, setSalvando] = useState(false);
+  const [salvandoIdioma, setSalvandoIdioma] = useState(false);
+  const [erroIdioma, setErroIdioma] = useState<string | null>(null);
   const [excluindo, setExcluindo] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState<string | null>(null);
@@ -34,6 +37,28 @@ export default function ContaForm({ usuario }: { usuario: Usuario }) {
     }
 
     setMensagem("Nome atualizado.");
+    router.refresh();
+  }
+
+  async function handleSalvarIdioma(novoIdioma: string) {
+    setIdioma(novoIdioma);
+    setSalvandoIdioma(true);
+    setErroIdioma(null);
+
+    const res = await fetch("/api/me", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idioma: novoIdioma || null }),
+    });
+
+    const data = await res.json().catch(() => null);
+    setSalvandoIdioma(false);
+
+    if (!res.ok) {
+      setErroIdioma(data?.erro ?? "Não foi possível salvar o idioma.");
+      return;
+    }
+
     router.refresh();
   }
 
@@ -89,6 +114,27 @@ export default function ContaForm({ usuario }: { usuario: Usuario }) {
         )}
         {mensagem && <p className="text-sm text-green-500">{mensagem}</p>}
       </form>
+
+      <div className="space-y-3 border-t border-neutral-800 pt-6">
+        <label htmlFor="idioma" className="block text-sm text-neutral-400">
+          Traduzir títulos e resumos dos livros para
+        </label>
+        <select
+          id="idioma"
+          value={idioma}
+          onChange={(e) => handleSalvarIdioma(e.target.value)}
+          disabled={salvandoIdioma}
+          className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 disabled:opacity-50"
+        >
+          <option value="">Original (sem tradução)</option>
+          {Object.entries(IDIOMAS_SUPORTADOS).map(([codigo, nomeIdioma]) => (
+            <option key={codigo} value={codigo}>
+              {nomeIdioma}
+            </option>
+          ))}
+        </select>
+        {erroIdioma && <p className="text-sm text-red-500">{erroIdioma}</p>}
+      </div>
 
       <form onSubmit={handleExcluirConta} className="space-y-3 border-t border-neutral-800 pt-6">
         <label className="block text-sm text-neutral-400">Apagar conta</label>

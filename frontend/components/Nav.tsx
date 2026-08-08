@@ -34,6 +34,11 @@ export default function Nav({ usuario }: { usuario: Usuario | null }) {
           Minhas listas
         </Link>
       )}
+      {usuario && (
+        <Link href="/estatisticas" className="hover:underline" onClick={() => setMenuAberto(false)}>
+          Estatísticas
+        </Link>
+      )}
       {usuario ? (
         <>
           <Link href="/conta" className="hover:underline" onClick={() => setMenuAberto(false)}>

@@ -12,7 +12,11 @@ export default function CardLivro({ livro }: { livro: Livro }) {
     >
       {capa && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={capa} alt={livro.titulo} className="mb-2 h-48 w-full rounded object-cover" />
+        <img
+          src={capa}
+          alt={livro.titulo}
+          className="mb-2 aspect-[2/3] w-full rounded object-cover"
+        />
       )}
       <p className="font-medium">{livro.titulo}</p>
       <p className="text-sm text-neutral-400">{livro.autor}</p>
