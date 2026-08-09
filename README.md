@@ -29,5 +29,4 @@ Abra [http://localhost:3000](http://localhost:3000).
 
 ## Deploy
 
-- Frontend: [enciclopedia-de-livros-frontend.vercel.app](https://enciclopedia-de-livros-frontend.vercel.app/)
-- Backend: sem URL de deploy documentada.
+Sem deploy ativo no momento.
