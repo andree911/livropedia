@@ -29,4 +29,7 @@ Abra [http://localhost:3000](http://localhost:3000).
 
 ## Deploy
 
-Sem deploy ativo no momento.
+- Frontend: [Vercel](https://livropedia.vercel.app)
+- Backend: VPS própria, Docker + Traefik (`https://srv1892430.hstgr.cloud:3003`)
+
+Detalhes em [`DEPLOY.md`](./DEPLOY.md).
