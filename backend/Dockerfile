@@ -14,4 +14,4 @@ RUN mkdir -p static/capas
 
 EXPOSE 5001
 
-CMD ["gunicorn", "--bind", "0.0.0.0:5001", "--workers", "3", "--timeout", "60", "wsgi:app"]
+CMD ["gunicorn", "--preload", "--bind", "0.0.0.0:5001", "--workers", "3", "--timeout", "60", "wsgi:app"]
