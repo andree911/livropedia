@@ -17,28 +17,6 @@ services:
       - "traefik.http.routers.livropedia-api.tls.certresolver=le"
       - "traefik.http.services.livropedia-api.loadbalancer.server.port=5001"
 
-  frontend:
-    build: ./frontend
-    restart: unless-stopped
-    environment:
-      # Precisa ser a URL PÚBLICA da API (não o hostname interno "backend"):
-      # capa_url de livro é resolvida no servidor e mandada pronta pro
-      # navegador, então o hostname precisa ser algo que o navegador do
-      # visitante também consiga resolver.
-      FLASK_API_URL: ${FLASK_API_URL:?defina FLASK_API_URL (ex: https://srv1892430.hstgr.cloud:3003) no .env}
-      NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
-    networks:
-      - edge
-    depends_on:
-      - backend
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=edge"
-      - "traefik.http.routers.livropedia-web.entrypoints=app-livropedia-web"
-      - "traefik.http.routers.livropedia-web.rule=Host(`srv1892430.hstgr.cloud`)"
-      - "traefik.http.routers.livropedia-web.tls.certresolver=le"
-      - "traefik.http.services.livropedia-web.loadbalancer.server.port=3000"
-
 networks:
   edge:
     external: true
