@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: livropedia
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: livropedia
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U livropedia"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://livropedia:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}@db:5432/livropedia
+    volumes:
+      - capas_data:/app/static/capas
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      # Precisa ser a URL PÚBLICA da API (não o hostname interno "backend"):
+      # capa_url de livro é resolvida no servidor e mandada pronta pro
+      # navegador, então o hostname precisa ser algo que o navegador do
+      # visitante também consiga resolver.
+      FLASK_API_URL: ${FLASK_API_URL:?defina FLASK_API_URL (ex: https://api.seu-dominio.com) no .env}
+      NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+    depends_on:
+      - backend
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  db_data:
+  capas_data:
+  caddy_data:
+  caddy_config:
